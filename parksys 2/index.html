@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Parking Access 2</title>
+    
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #555555;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .result p {
+            margin: 5px 0;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Block Parking Access 2</h1>
+        <div class="form-group">
+            <label for="blockSelect">Select Block:</label>
+            <select id="blockSelect">
+                <option value="" disabled selected>Select a block</option>
+                <option value="1">Block A</option>
+                <option value="2">Block B</option>
+                <option value="3">Block C</option>
+                <option value="4">Block D</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="regNumber">Enter Registration Number:</label>
+            <input type="text" id="regNumber" placeholder="e.g. 123456">
+        </div>
+        <button onclick="checkParkingAccess()">Check Access</button>
+        <div id="result" class="result" style="display: none;">
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Registration Number:</strong> <span id="reg"></span></p>
+            <p><strong>Department:</strong> <span id="dept"></span></p>
+            <p><strong>Block:</strong> <span id="block"></span></p>
+            <p id="accessMessage" class="success"></p>
+        </div>        
+    </div>
+
+    <script>
+        function checkParkingAccess() {
+            const block = document.getElementById('blockSelect').value;
+            const regNumber = document.getElementById('regNumber').value;
+        
+            fetch('/check-access', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ regNumber: regNumber, block: block })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                const accessMessage = document.getElementById('accessMessage');
+        
+                if (data.error) {
+                    resultDiv.style.display = 'none';
+                    alert(data.error);
+                } else {
+                    document.getElementById('name').innerText = data.name;
+                    document.getElementById('reg').innerText = data.regNumber;
+                    document.getElementById('dept').innerText = data.dept;
+                    document.getElementById('block').innerText = data.block;
+        
+                    if (data.accessGranted) {
+                        accessMessage.innerText = 'Access Granted: You can park in this block.';
+                        accessMessage.className = 'success';
+                    } else {
+                        accessMessage.innerText = 'Access Denied: Your department does not belong to this block.';
+                        accessMessage.className = 'error';
+                    }
+                    resultDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while checking access.');
+            });
+        }
+    </script>
+</body>
+</html>
